@@ -101,12 +101,12 @@
 <!--            <version>${revision}</version>-->
 <!--        </dependency>-->
 
-        <!-- AI 大模型相关模块。默认注释，保证编译速度 -->
-<!--        <dependency>-->
-<!--            <groupId>cn.iocoder.boot</groupId>-->
-<!--            <artifactId>yudao-module-ai</artifactId>-->
-<!--            <version>${revision}</version>-->
-<!--        </dependency>-->
+        <!-- AI 大模型相关模块 -->
+        <dependency>
+            <groupId>cn.iocoder.boot</groupId>
+            <artifactId>yudao-module-ai</artifactId>
+            <version>${revision}</version>
+        </dependency>
 
         <!-- IoT 物联网相关模块。默认注释，保证编译速度 -->
 <!--        <dependency>-->
@@ -134,6 +134,11 @@
         <!-- 设置构建的 jar 包名 -->
         <finalName>${project.artifactId}</finalName>
         <plugins>
+            <!-- 编译插件，确保使用 -parameters 参数 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+            </plugin>
             <!-- 打包 -->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
