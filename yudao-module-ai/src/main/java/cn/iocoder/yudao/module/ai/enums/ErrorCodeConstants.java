@@ -65,4 +65,8 @@ public interface ErrorCodeConstants {
     ErrorCode WORKFLOW_NOT_EXISTS = new ErrorCode(1_040_011_000, "工作流不存在");
     ErrorCode WORKFLOW_CODE_EXISTS = new ErrorCode(1_040_011_001, "工作流标识已存在");
 
+    // ========== AI 视频 1-040-012-000 ==========
+    ErrorCode VIDEO_NOT_EXISTS = new ErrorCode(1_040_012_000, "视频不存在!");
+    ErrorCode VIDEO_GENERATE_FAIL = new ErrorCode(1_040_012_001, "视频生成失败!原因：{}");
+
 }
