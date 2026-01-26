@@ -4,6 +4,7 @@ import cn.iocoder.yudao.module.ai.enums.model.AiPlatformEnum;
 import cn.iocoder.yudao.module.ai.framework.ai.core.model.AiModelFactory;
 import cn.iocoder.yudao.module.ai.framework.ai.core.model.midjourney.api.MidjourneyApi;
 import cn.iocoder.yudao.module.ai.framework.ai.core.model.suno.api.SunoApi;
+import cn.iocoder.yudao.module.ai.framework.ai.core.model.yunwu.api.YunWuVideoApi;
 import cn.iocoder.yudao.framework.common.enums.CommonStatusEnum;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
@@ -153,6 +154,13 @@ public class AiModelServiceImpl implements AiModelService {
         AiApiKeyDO apiKey = apiKeyService.getRequiredDefaultApiKey(
                 AiPlatformEnum.SUNO.getPlatform(), CommonStatusEnum.ENABLE.getStatus());
         return modelFactory.getOrCreateSunoApi(apiKey.getApiKey(), apiKey.getUrl());
+    }
+
+    @Override
+    public YunWuVideoApi getYunWuVideoApi(Long id) {
+        AiModelDO model = validateModel(id);
+        AiApiKeyDO apiKey = apiKeyService.validateApiKey(model.getKeyId());
+        return modelFactory.getOrCreateYunWuVideoApi(apiKey.getApiKey(), apiKey.getUrl());
     }
 
     @Override

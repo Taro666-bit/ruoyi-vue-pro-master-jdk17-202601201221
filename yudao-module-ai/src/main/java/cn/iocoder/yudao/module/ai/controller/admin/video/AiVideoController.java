@@ -6,8 +6,13 @@ import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.module.ai.controller.admin.video.vo.AiVideoGenerateReqVO;
 import cn.iocoder.yudao.module.ai.controller.admin.video.vo.AiVideoPageReqVO;
 import cn.iocoder.yudao.module.ai.controller.admin.video.vo.AiVideoRespVO;
+import cn.iocoder.yudao.module.ai.dal.dataobject.model.AiModelDO;
 import cn.iocoder.yudao.module.ai.dal.dataobject.video.AiVideoDO;
+import cn.iocoder.yudao.module.ai.enums.model.AiModelTypeEnum;
+import cn.iocoder.yudao.module.ai.enums.model.AiPlatformEnum;
+import cn.iocoder.yudao.module.ai.service.model.AiModelService;
 import cn.iocoder.yudao.module.ai.service.video.AiVideoService;
+import cn.iocoder.yudao.framework.common.enums.CommonStatusEnum;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -16,6 +21,8 @@ import jakarta.validation.Valid;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 import static cn.iocoder.yudao.framework.common.pojo.CommonResult.success;
 import static cn.iocoder.yudao.framework.security.core.util.SecurityFrameworkUtils.getLoginUserId;
@@ -28,6 +35,9 @@ public class AiVideoController {
 
     @Resource
     private AiVideoService videoService;
+
+    @Resource
+    private AiModelService modelService;
 
     // ==================== 用户端接口 ====================
 
@@ -99,19 +109,24 @@ public class AiVideoController {
 
     @GetMapping("/models")
     @Operation(summary = "获取支持的视频模型列表")
-    public CommonResult<Object> getVideoModels() {
-        // 返回支持的模型列表
-        return success(new Object[]{
-                new VideoModel("sora-2", "Sora2 标准版", "15/25秒，720p，适合一般场景"),
-                new VideoModel("sora-2-pro", "Sora2 Pro高清版", "15/25秒，1080p，高清画质"),
-                new VideoModel("sora-all", "Sora All", "聚合版本")
-        });
+    public CommonResult<List<AiVideoModelRespVO>> getVideoModels() {
+        // 从数据库查询已启用的视频模型（type=4表示视频类型）
+        List<AiModelDO> models = modelService.getModelListByStatusAndType(
+                CommonStatusEnum.ENABLE.getStatus(),
+                AiModelTypeEnum.VIDEO.getType(),
+                AiPlatformEnum.YUN_WU.getPlatform()
+        );
+        // 转换为响应VO
+        List<AiVideoModelRespVO> result = models.stream()
+                .map(model -> new AiVideoModelRespVO(model.getId(), model.getModel(), model.getName()))
+                .toList();
+        return success(result);
     }
 
     /**
-     * 视频模型信息
+     * 视频模型响应VO
      */
-    public record VideoModel(String model, String name, String description) {
+    public record AiVideoModelRespVO(Long id, String model, String name) {
     }
 
 }

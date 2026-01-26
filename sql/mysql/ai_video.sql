@@ -50,15 +50,23 @@ CREATE TABLE `ai_video` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='AI 视频生成表';
 
 -- ----------------------------
--- 初始化云雾API配置（需要手动执行或通过后台添加）
--- 注意：请将 your-api-key 替换为实际的 API Key
+-- 初始化云雾API配置
+-- 使用说明：
+-- 1. 首先执行 ai_api_key 的 INSERT 语句添加API密钥
+-- 2. 然后执行 ai_model 的 INSERT 语句添加模型配置
+-- 3. 或者在系统管理后台的"AI管理-API密钥"和"AI管理-模型管理"页面手动添加
 -- ----------------------------
--- INSERT INTO `ai_api_key` (`name`, `api_key`, `platform`, `url`, `status`, `creator`, `create_time`, `updater`, `update_time`, `deleted`, `tenant_id`)
--- VALUES ('云雾API-Sora', 'sk-lLqS0EeXrwzieSmF6KqOBwyHAalENKG9FFnMKn0NG7NtlOkW', 'YunWu', 'https://yunwu.ai', 0, 'admin', NOW(), 'admin', NOW(), b'0', 1);
 
--- 添加 Sora2 模型配置
--- INSERT INTO `ai_model` (`key_id`, `name`, `model`, `platform`, `type`, `sort`, `status`, `creator`, `create_time`, `updater`, `update_time`, `deleted`, `tenant_id`)
--- VALUES
--- ((SELECT id FROM ai_api_key WHERE name = '云雾API-Sora' LIMIT 1), 'Sora2 标准版', 'sora-2', 'YunWu', 4, 1, 0, 'admin', NOW(), 'admin', NOW(), b'0', 1),
--- ((SELECT id FROM ai_api_key WHERE name = '云雾API-Sora' LIMIT 1), 'Sora2 Pro高清版', 'sora-2-pro', 'YunWu', 4, 2, 0, 'admin', NOW(), 'admin', NOW(), b'0', 1),
--- ((SELECT id FROM ai_api_key WHERE name = '云雾API-Sora' LIMIT 1), 'Sora All', 'sora-all', 'YunWu', 4, 3, 0, 'admin', NOW(), 'admin', NOW(), b'0', 1);
+-- 步骤1：添加云雾API密钥（请将 api_key 替换为您的实际密钥）
+INSERT INTO `ai_api_key` (`name`, `api_key`, `platform`, `url`, `status`, `creator`, `create_time`, `updater`, `update_time`, `deleted`, `tenant_id`)
+VALUES ('云雾API-Sora视频', 'sk-lLqS0EeXrwzieSmF6KqOBwyHAalENKG9FFnMKn0NG7NtlOkW', 'YunWu', 'https://api.yunwu.ai', 0, 'admin', NOW(), 'admin', NOW(), b'0', 1);
+
+-- 步骤2：获取刚插入的 api_key id
+SET @yunwu_api_key_id = LAST_INSERT_ID();
+
+-- 步骤3：添加 Sora2 系列模型配置（type=4 表示视频类型）
+INSERT INTO `ai_model` (`key_id`, `name`, `model`, `platform`, `type`, `sort`, `status`, `creator`, `create_time`, `updater`, `update_time`, `deleted`, `tenant_id`)
+VALUES
+(@yunwu_api_key_id, 'Sora2 标准版', 'sora-2', 'YunWu', 4, 1, 0, 'admin', NOW(), 'admin', NOW(), b'0', 1),
+(@yunwu_api_key_id, 'Sora2 Pro高清版', 'sora-2-pro', 'YunWu', 4, 2, 0, 'admin', NOW(), 'admin', NOW(), b'0', 1),
+(@yunwu_api_key_id, 'Sora All聚合版', 'sora-all', 'YunWu', 4, 3, 0, 'admin', NOW(), 'admin', NOW(), b'0', 1);

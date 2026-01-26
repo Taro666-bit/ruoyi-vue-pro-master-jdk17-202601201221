@@ -23,6 +23,7 @@ import cn.iocoder.yudao.module.ai.framework.ai.core.model.siliconflow.SiliconFlo
 import cn.iocoder.yudao.module.ai.framework.ai.core.model.siliconflow.SiliconFlowImageModel;
 import cn.iocoder.yudao.module.ai.framework.ai.core.model.suno.api.SunoApi;
 import cn.iocoder.yudao.module.ai.framework.ai.core.model.xinghuo.XingHuoChatModel;
+import cn.iocoder.yudao.module.ai.framework.ai.core.model.yunwu.api.YunWuVideoApi;
 import com.alibaba.cloud.ai.autoconfigure.dashscope.DashScopeChatAutoConfiguration;
 import com.alibaba.cloud.ai.autoconfigure.dashscope.DashScopeEmbeddingAutoConfiguration;
 import com.alibaba.cloud.ai.autoconfigure.dashscope.DashScopeImageAutoConfiguration;
@@ -284,6 +285,12 @@ public class AiModelFactoryImpl implements AiModelFactory {
     public SunoApi getOrCreateSunoApi(String apiKey, String url) {
         String cacheKey = buildClientCacheKey(SunoApi.class, AiPlatformEnum.SUNO.getPlatform(), apiKey, url);
         return Singleton.get(cacheKey, (Func0<SunoApi>) () -> new SunoApi(url));
+    }
+
+    @Override
+    public YunWuVideoApi getOrCreateYunWuVideoApi(String apiKey, String url) {
+        String cacheKey = buildClientCacheKey(YunWuVideoApi.class, AiPlatformEnum.YUN_WU.getPlatform(), apiKey, url);
+        return Singleton.get(cacheKey, (Func0<YunWuVideoApi>) () -> new YunWuVideoApi(url, apiKey));
     }
 
     @Override

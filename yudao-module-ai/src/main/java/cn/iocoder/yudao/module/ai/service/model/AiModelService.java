@@ -2,6 +2,7 @@ package cn.iocoder.yudao.module.ai.service.model;
 
 import cn.iocoder.yudao.module.ai.framework.ai.core.model.midjourney.api.MidjourneyApi;
 import cn.iocoder.yudao.module.ai.framework.ai.core.model.suno.api.SunoApi;
+import cn.iocoder.yudao.module.ai.framework.ai.core.model.yunwu.api.YunWuVideoApi;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.module.ai.controller.admin.model.vo.model.AiModelPageReqVO;
 import cn.iocoder.yudao.module.ai.controller.admin.model.vo.model.AiModelSaveReqVO;
@@ -122,6 +123,14 @@ public interface AiModelService {
      * @return SunoApi 对象
      */
     SunoApi getSunoApi();
+
+    /**
+     * 获得 YunWuVideoApi 对象
+     *
+     * @param id 模型编号
+     * @return YunWuVideoApi 对象
+     */
+    YunWuVideoApi getYunWuVideoApi(Long id);
 
     /**
      * 获得 VectorStore 对象

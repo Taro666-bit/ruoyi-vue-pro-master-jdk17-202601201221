@@ -7,20 +7,24 @@ import cn.hutool.http.HttpUtil;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.module.ai.controller.admin.video.vo.AiVideoGenerateReqVO;
 import cn.iocoder.yudao.module.ai.controller.admin.video.vo.AiVideoPageReqVO;
+import cn.iocoder.yudao.module.ai.dal.dataobject.model.AiModelDO;
 import cn.iocoder.yudao.module.ai.dal.dataobject.video.AiVideoDO;
 import cn.iocoder.yudao.module.ai.dal.mysql.video.AiVideoMapper;
+import cn.iocoder.yudao.module.ai.enums.model.AiPlatformEnum;
 import cn.iocoder.yudao.module.ai.enums.video.AiVideoStatusEnum;
 import cn.iocoder.yudao.module.ai.framework.ai.core.model.yunwu.api.YunWuVideoApi;
+import cn.iocoder.yudao.module.ai.service.model.AiModelService;
 import cn.iocoder.yudao.module.infra.api.file.FileApi;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static cn.iocoder.yudao.module.ai.enums.ErrorCodeConstants.VIDEO_NOT_EXISTS;
@@ -34,36 +38,27 @@ import static cn.iocoder.yudao.module.ai.enums.ErrorCodeConstants.VIDEO_NOT_EXIS
 @Slf4j
 public class AiVideoServiceImpl implements AiVideoService {
 
-    /**
-     * 云雾API地址
-     */
-    private static final String YUNWU_BASE_URL = "https://yunwu.ai";
-
-    /**
-     * 平台标识
-     */
-    private static final String PLATFORM = "YunWu";
-
     @Resource
     private AiVideoMapper videoMapper;
 
     @Resource
-    private FileApi fileApi;
+    private AiModelService modelService;
 
-    /**
-     * 云雾API Key - 从配置文件读取
-     */
-    @Value("${yudao.ai.yunwu.api-key:}")
-    private String yunwuApiKey;
+    @Resource
+    private FileApi fileApi;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Long generateVideo(Long userId, AiVideoGenerateReqVO reqVO) {
-        // 1. 创建视频记录
+        // 1. 校验模型
+        AiModelDO model = modelService.validateModel(reqVO.getModelId());
+
+        // 2. 创建视频记录
         AiVideoDO video = new AiVideoDO()
                 .setUserId(userId)
-                .setModel(reqVO.getModel())
-                .setPlatform(PLATFORM)
+                .setModelId(model.getId())
+                .setModel(model.getModel())
+                .setPlatform(model.getPlatform())
                 .setPrompt(reqVO.getPrompt())
                 .setDuration(reqVO.getDuration() != null ? reqVO.getDuration() : 15)
                 .setSize("large") // 1080p
@@ -74,8 +69,8 @@ public class AiVideoServiceImpl implements AiVideoService {
                 .setStatus(AiVideoStatusEnum.IN_PROGRESS.getStatus());
         videoMapper.insert(video);
 
-        // 2. 异步调用云雾API生成视频
-        getSelf().executeGenerateVideo(video);
+        // 3. 异步调用云雾API生成视频
+        getSelf().executeGenerateVideo(video, model.getId());
 
         return video.getId();
     }
@@ -84,12 +79,13 @@ public class AiVideoServiceImpl implements AiVideoService {
      * 异步执行视频生成
      *
      * @param video 视频记录
+     * @param modelId 模型ID
      */
     @Async
-    public void executeGenerateVideo(AiVideoDO video) {
+    public void executeGenerateVideo(AiVideoDO video, Long modelId) {
         try {
-            // 1. 创建云雾API客户端
-            YunWuVideoApi videoApi = new YunWuVideoApi(YUNWU_BASE_URL, yunwuApiKey);
+            // 1. 获取云雾API客户端（从数据库配置）
+            YunWuVideoApi videoApi = modelService.getYunWuVideoApi(modelId);
 
             // 2. 构建请求
             YunWuVideoApi.VideoCreateRequest request = YunWuVideoApi.VideoCreateRequest.builder()
@@ -170,37 +166,52 @@ public class AiVideoServiceImpl implements AiVideoService {
     @Override
     public Integer syncVideoStatus() {
         // 1. 查询所有进行中的视频任务
-        List<AiVideoDO> videos = videoMapper.selectListByStatus(
-                AiVideoStatusEnum.IN_PROGRESS.getStatus());
+        List<AiVideoDO> videos = videoMapper.selectListByStatusAndPlatform(
+                AiVideoStatusEnum.IN_PROGRESS.getStatus(),
+                AiPlatformEnum.YUN_WU.getPlatform());
 
         if (CollUtil.isEmpty(videos)) {
             return 0;
         }
 
-        // 2. 创建云雾API客户端
-        YunWuVideoApi videoApi = new YunWuVideoApi(YUNWU_BASE_URL, yunwuApiKey);
+        // 2. 按模型ID分组处理（不同模型可能有不同的API Key）
+        Map<Long, List<AiVideoDO>> groupByModel = videos.stream()
+                .filter(v -> v.getModelId() != null)
+                .collect(Collectors.groupingBy(AiVideoDO::getModelId));
 
-        // 3. 逐个查询状态并更新
         int count = 0;
-        for (AiVideoDO video : videos) {
-            // 跳过没有taskId的记录（可能还在提交中）
-            if (StrUtil.isEmpty(video.getTaskId())) {
-                continue;
-            }
+        for (Map.Entry<Long, List<AiVideoDO>> entry : groupByModel.entrySet()) {
+            Long modelId = entry.getKey();
+            List<AiVideoDO> modelVideos = entry.getValue();
 
             try {
-                // 查询状态
-                YunWuVideoApi.VideoStatusResponse status = videoApi.getVideoStatus(video.getTaskId());
-                if (status == null) {
-                    continue;
-                }
+                // 获取该模型的API客户端
+                YunWuVideoApi videoApi = modelService.getYunWuVideoApi(modelId);
 
-                // 更新状态
-                updateVideoStatus(video, status);
-                count++;
+                // 逐个查询状态并更新
+                for (AiVideoDO video : modelVideos) {
+                    // 跳过没有taskId的记录（可能还在提交中）
+                    if (StrUtil.isEmpty(video.getTaskId())) {
+                        continue;
+                    }
+
+                    try {
+                        // 查询状态
+                        YunWuVideoApi.VideoStatusResponse status = videoApi.getVideoStatus(video.getTaskId());
+                        if (status == null) {
+                            continue;
+                        }
+
+                        // 更新状态
+                        updateVideoStatus(video, status);
+                        count++;
+                    } catch (Exception ex) {
+                        log.error("[syncVideoStatus][同步失败] videoId={}, taskId={}",
+                                video.getId(), video.getTaskId(), ex);
+                    }
+                }
             } catch (Exception ex) {
-                log.error("[syncVideoStatus][同步失败] videoId={}, taskId={}",
-                        video.getId(), video.getTaskId(), ex);
+                log.error("[syncVideoStatus][获取API客户端失败] modelId={}", modelId, ex);
             }
         }
 

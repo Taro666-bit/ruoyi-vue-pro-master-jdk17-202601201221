@@ -10,9 +10,9 @@ import lombok.Data;
 @Data
 public class AiVideoGenerateReqVO {
 
-    @Schema(description = "模型标识", requiredMode = Schema.RequiredMode.REQUIRED, example = "sora-2")
-    @NotEmpty(message = "模型标识不能为空")
-    private String model;
+    @Schema(description = "模型编号", requiredMode = Schema.RequiredMode.REQUIRED, example = "1")
+    @NotNull(message = "模型编号不能为空")
+    private Long modelId;
 
     @Schema(description = "提示词", requiredMode = Schema.RequiredMode.REQUIRED, example = "一个穿着红色汉服的女孩在樱花树下漫步")
     @NotEmpty(message = "提示词不能为空")
