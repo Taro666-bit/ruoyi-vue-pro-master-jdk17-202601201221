@@ -254,6 +254,10 @@ yudao:
     web-search:
       enable: true
       api-key: sk-40500e52840f4d24b956d0b1d80d9abe
+    yunwu: # 云雾API - Sora2视频生成
+      enable: true
+      api-key: sk-lLqS0EeXrwzieSmF6KqOBwyHAalENKG9FFnMKn0NG7NtlOkW
+      base-url: https://yunwu.ai
 
 --- #################### 芋道相关配置 ####################
 

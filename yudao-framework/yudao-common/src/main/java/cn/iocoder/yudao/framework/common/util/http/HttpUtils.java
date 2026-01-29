@@ -7,11 +7,12 @@ import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.HttpRequest;
 import cn.hutool.http.HttpResponse;
-import jakarta.servlet.http.HttpServletRequest;
+import lombok.SneakyThrows;
 import org.springframework.util.StringUtils;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import javax.servlet.http.HttpServletRequest;
 import java.net.URI;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
@@ -32,8 +33,9 @@ public class HttpUtils {
      * @param value 参数
      * @return 编码后的参数
      */
+    @SneakyThrows
     public static String encodeUtf8(String value) {
-        return URLEncoder.encode(value, StandardCharsets.UTF_8);
+        return URLEncoder.encode(value, StandardCharsets.UTF_8.name());
     }
 
     /**
@@ -42,8 +44,9 @@ public class HttpUtils {
      * @param value 参数
      * @return 解码后的参数
      */
+    @SneakyThrows
     public static String decodeUtf8(String value) {
-        return URLDecoder.decode(value, StandardCharsets.UTF_8);
+        return URLDecoder.decode(value, StandardCharsets.UTF_8.name());
     }
 
     @SuppressWarnings("unchecked")

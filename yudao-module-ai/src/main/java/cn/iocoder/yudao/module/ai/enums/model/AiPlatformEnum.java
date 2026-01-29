@@ -41,6 +41,7 @@ public enum AiPlatformEnum implements ArrayValuable<String> {
     MIDJOURNEY("Midjourney", "Midjourney"), // Midjourney
     SUNO("Suno", "Suno"), // Suno AI
     GROK("Grok","Grok"), // Grok
+    YUN_WU("YunWu", "云雾API"), // 云雾API - Sora2视频生成
 
     ;
 

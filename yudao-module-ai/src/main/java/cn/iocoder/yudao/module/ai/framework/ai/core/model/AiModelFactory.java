@@ -3,6 +3,7 @@ package cn.iocoder.yudao.module.ai.framework.ai.core.model;
 import cn.iocoder.yudao.module.ai.enums.model.AiPlatformEnum;
 import cn.iocoder.yudao.module.ai.framework.ai.core.model.midjourney.api.MidjourneyApi;
 import cn.iocoder.yudao.module.ai.framework.ai.core.model.suno.api.SunoApi;
+import cn.iocoder.yudao.module.ai.framework.ai.core.model.yunwu.api.YunWuVideoApi;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.embedding.EmbeddingModel;
 import org.springframework.ai.image.ImageModel;
@@ -82,6 +83,17 @@ public interface AiModelFactory {
      * @return SunoApi 对象
      */
     SunoApi getOrCreateSunoApi(String apiKey, String url);
+
+    /**
+     * 基于指定配置，获得 YunWuVideoApi 对象
+     *
+     * 如果不存在，则进行创建
+     *
+     * @param apiKey API KEY
+     * @param url API URL
+     * @return YunWuVideoApi 对象
+     */
+    YunWuVideoApi getOrCreateYunWuVideoApi(String apiKey, String url);
 
     /**
      * 基于指定配置，获得 EmbeddingModel 对象
