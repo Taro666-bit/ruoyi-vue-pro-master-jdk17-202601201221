@@ -36,6 +36,13 @@ nbdist/
 .nb-gradle/
 
 ######################################################################
+# Node.js
+node_modules/
+dist/
+.pnpm-workspace-state-v1.json
+*.local
+
+######################################################################
 # Others
 *.log
 *.xml.versionsBackup
@@ -52,3 +59,4 @@ application-my.yaml
 
 /yudao-ui-app/unpackage/
 **/.DS_Store
+.claude/settings.local.json

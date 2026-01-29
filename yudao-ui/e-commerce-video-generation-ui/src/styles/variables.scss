@@ -1,0 +1,35 @@
+// 主题色变量
+$primary-color: #a855f7;
+$primary-light: #c084fc;
+$primary-dark: #9333ea;
+$primary-gradient: linear-gradient(135deg, #ec4899 0%, #a855f7 50%, #6366f1 100%);
+
+// 文字颜色
+$text-primary: #1f2937;
+$text-secondary: #6b7280;
+$text-muted: #9ca3af;
+
+// 背景色
+$bg-main: #f9fafb;
+$bg-white: #ffffff;
+$bg-sidebar: #1f2937;
+$bg-sidebar-dark: #111827;
+
+// 边框
+$border-color: #e5e7eb;
+$border-radius: 12px;
+$border-radius-sm: 8px;
+$border-radius-lg: 16px;
+
+// 阴影
+$shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+$shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+$shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+$shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+
+// 侧边栏宽度
+$sidebar-width: 240px;
+$sidebar-collapsed-width: 64px;
+
+// 过渡
+$transition-base: all 0.3s ease;
