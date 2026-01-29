@@ -107,7 +107,17 @@ public class AiVideoServiceImpl implements AiVideoService {
                 throw new IllegalStateException("云雾API响应为空");
             }
 
-            // 5. 更新任务ID
+            // 5. 检查API是否返回错误状态
+            if ("error".equals(response.getStatus())) {
+                throw new IllegalStateException("云雾API返回错误: " + response.getError());
+            }
+
+            // 6. 检查任务ID是否为空
+            if (StrUtil.isEmpty(response.getTaskId())) {
+                throw new IllegalStateException("云雾API未返回任务ID");
+            }
+
+            // 7. 更新任务ID
             videoMapper.updateById(new AiVideoDO()
                     .setId(video.getId())
                     .setTaskId(response.getTaskId()));
@@ -233,12 +243,9 @@ public class AiVideoServiceImpl implements AiVideoService {
             case COMPLETED:
                 // 下载视频并上传到自己的存储
                 String videoUrl = uploadToStorage(status.getVideoUrl(), "video");
-                String coverUrl = StrUtil.isNotEmpty(status.getCoverUrl()) ?
-                        uploadToStorage(status.getCoverUrl(), "cover") : null;
 
                 updateDO.setStatus(AiVideoStatusEnum.SUCCESS.getStatus())
                         .setVideoUrl(videoUrl)
-                        .setCoverUrl(coverUrl)
                         .setFinishTime(LocalDateTime.now());
 
                 log.info("[updateVideoStatus][视频生成成功] videoId={}, videoUrl={}",
@@ -247,17 +254,17 @@ public class AiVideoServiceImpl implements AiVideoService {
 
             case FAILED:
                 updateDO.setStatus(AiVideoStatusEnum.FAIL.getStatus())
-                        .setErrorMessage(status.getErrorMessage())
+                        .setErrorMessage(status.getError())
                         .setFinishTime(LocalDateTime.now());
 
                 log.warn("[updateVideoStatus][视频生成失败] videoId={}, error={}",
-                        video.getId(), status.getErrorMessage());
+                        video.getId(), status.getError());
                 break;
 
             default:
                 // PENDING / PROCESSING - 不更新状态，等下次同步
-                log.debug("[updateVideoStatus][视频生成中] videoId={}, status={}, progress={}",
-                        video.getId(), status.getStatus(), status.getProgress());
+                log.debug("[updateVideoStatus][视频生成中] videoId={}, status={}",
+                        video.getId(), status.getStatus());
                 return;
         }
 

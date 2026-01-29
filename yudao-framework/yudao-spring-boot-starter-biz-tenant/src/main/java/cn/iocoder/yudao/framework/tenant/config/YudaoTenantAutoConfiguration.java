@@ -19,6 +19,7 @@ import cn.iocoder.yudao.framework.tenant.core.service.TenantFrameworkServiceImpl
 import cn.iocoder.yudao.framework.tenant.core.web.TenantContextWebFilter;
 import cn.iocoder.yudao.framework.tenant.core.web.TenantVisitContextInterceptor;
 import cn.iocoder.yudao.framework.web.config.WebProperties;
+import cn.iocoder.yudao.framework.web.config.YudaoWebAutoConfiguration;
 import cn.iocoder.yudao.framework.web.core.handler.GlobalExceptionHandler;
 import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.TenantLineInnerInterceptor;
@@ -51,7 +52,7 @@ import java.util.Set;
 
 import static cn.iocoder.yudao.framework.common.util.collection.CollectionUtils.convertList;
 
-@AutoConfiguration
+@AutoConfiguration(after = {YudaoWebAutoConfiguration.class})
 @ConditionalOnProperty(prefix = "yudao.tenant", value = "enable", matchIfMissing = true) // 允许使用 yudao.tenant.enable=false 禁用多租户
 @EnableConfigurationProperties(TenantProperties.class)
 public class YudaoTenantAutoConfiguration {

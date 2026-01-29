@@ -72,16 +72,18 @@ public class YunWuVideoApi {
 
     /**
      * 查询视频生成状态
-     * GET /v1/video/status?task_id=xxx
+     * GET /v1/video/query?id=xxx
      *
-     * @param taskId 任务ID
+     * 文档地址: https://yunwu.apifox.cn/api-358068905
+     *
+     * @param taskId 任务ID (如: sora-2:6b3a5cab-441b-4a59-a6d9-d9c4699a9da2)
      * @return 状态信息
      */
     public VideoStatusResponse getVideoStatus(String taskId) {
         return webClient.get()
                 .uri(uriBuilder -> uriBuilder
-                        .path("/v1/video/status")
-                        .queryParam("task_id", taskId)
+                        .path("/v1/video/query")
+                        .queryParam("id", taskId)
                         .build())
                 .retrieve()
                 .onStatus(STATUS_PREDICATE, EXCEPTION_FUNCTION.apply(taskId))
@@ -175,55 +177,68 @@ public class YunWuVideoApi {
 
     /**
      * 视频创建响应
+     *
+     * 实际API响应示例:
+     * {
+     *   "id": "sora-2:6b3a5cab-441b-4a59-a6d9-d9c4699a9da2",
+     *   "status": "pending",
+     *   "status_update_time": 1769665625702
+     * }
      */
     @Data
     public static class VideoCreateResponse {
 
         /**
-         * 任务ID
+         * 任务ID (API返回字段名为 "id")
          */
-        @JsonProperty("task_id")
+        @JsonProperty("id")
         private String taskId;
 
         /**
-         * 状态
+         * 状态: pending/error
          */
         private String status;
 
         /**
-         * 创建时间戳
+         * 状态更新时间戳
          */
-        @JsonProperty("create_time")
-        private Long createTime;
+        @JsonProperty("status_update_time")
+        private Long statusUpdateTime;
 
         /**
-         * 消耗的token
+         * 错误信息 (当 status="error" 时返回)
          */
-        @JsonProperty("tokens_used")
-        private Integer tokensUsed;
-
-        /**
-         * 错误码
-         */
-        private String code;
-
-        /**
-         * 错误信息
-         */
-        private String message;
+        private String error;
 
     }
 
     /**
      * 视频状态响应
+     *
+     * 实际API响应示例:
+     * {
+     *   "id": "sora-2:6b3a5cab-441b-4a59-a6d9-d9c4699a9da2",
+     *   "status": "completed",
+     *   "video_url": "https://example.com/video.mp4",
+     *   "enhanced_prompt": "优化后的提示词...",
+     *   "status_update_time": 1769665847
+     * }
+     *
+     * 失败时:
+     * {
+     *   "id": "...",
+     *   "status": "failed",
+     *   "status_update_time": 1769665847,
+     *   "error": "Task failed"
+     * }
      */
     @Data
     public static class VideoStatusResponse {
 
         /**
-         * 任务ID
+         * 任务ID (API返回字段名为 "id")
          */
-        @JsonProperty("task_id")
+        @JsonProperty("id")
         private String taskId;
 
         /**
@@ -232,39 +247,27 @@ public class YunWuVideoApi {
         private String status;
 
         /**
-         * 视频URL
+         * 视频URL (成功时返回)
          */
         @JsonProperty("video_url")
         private String videoUrl;
 
         /**
-         * 封面URL
+         * 错误信息 (失败时返回)
          */
-        @JsonProperty("cover_url")
-        private String coverUrl;
+        private String error;
 
         /**
-         * 进度百分比 0-100
+         * 优化后的提示词
          */
-        private Integer progress;
+        @JsonProperty("enhanced_prompt")
+        private String enhancedPrompt;
 
         /**
-         * 错误信息
+         * 状态更新时间戳
          */
-        @JsonProperty("error_message")
-        private String errorMessage;
-
-        /**
-         * 创建时间
-         */
-        @JsonProperty("create_time")
-        private Long createTime;
-
-        /**
-         * 完成时间
-         */
-        @JsonProperty("finish_time")
-        private Long finishTime;
+        @JsonProperty("status_update_time")
+        private Long statusUpdateTime;
 
     }
 
